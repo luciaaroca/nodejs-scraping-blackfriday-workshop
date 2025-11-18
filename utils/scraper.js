@@ -19,7 +19,9 @@ const extractProductData = async (url,browser) => {
         //titulo --> h1
         productData['name'] = await page.$eval("h1", name => name.innerHTML)
         //precio --> .product_price.int_price
-        productData['price'] = await page.$eval(".product_price", price => price.innerHTML)
+        const price_int = await page.$eval(".product_price", price_int => price_int.innerHTML)
+        const price_sup = await page.$eval("sup > span", price_sup => price_sup.innerHTML)
+        productData['price'] = price_int + price_sup;
         //imagenes --> document.querySelector("figure > img").src
         productData['img'] = await page.$eval("figure > img", img => img.src)
         //descripción
@@ -62,7 +64,7 @@ const scrap = async (url) => {
         const urls = await tmpurls.filter((link,index) =>{ return tmpurls.indexOf(link) === index})
 
         console.log("url capuradas",urls)
-        // Me quedo con los 20 primeros productos, porque sino es muy largo
+        // Me quedo con los  5 primeros productos, porque sino es muy largo
         const urls2 = urls.slice(0, 5);
 
         // Filtramos los productos
@@ -70,7 +72,8 @@ const scrap = async (url) => {
         // await extractProductData(urls2[productLink],browser)
 
         console.log(`${urls2.length} links encontrados`);
-    
+        console.log(urls2);
+        
         // Iteramos el array de urls con un bucle for/in y ejecutamos la promesa extractProductData por cada link en el array. Luego pusheamos el resultado a scraped data
         for(productLink in urls2){
             const product = await extractProductData(urls2[productLink],browser)
@@ -100,7 +103,7 @@ const scrap = async (url) => {
 exports.scrap = scrap;
 
 /********** DESCOMENTAR PARA PROBAR *********/
-/*
+
 scrap("https://www.coolmod.com/novedades/").then(data =>{
     console.log(data)
     // aquí podríamos guardar los datos (por ejemplo) en la base de datos con mongoose
@@ -108,5 +111,7 @@ scrap("https://www.coolmod.com/novedades/").then(data =>{
     // Product.insertMany(data).then(()=>{
     //     console.log("Productos guardados en la base de datos")
     // }).catch(err=>console.log(err))
+    //Para esto habria que importar en model de mongo 
+    //Crear en services un método que permite insertar un array para insertar películas en tu colección y llamarlo aqui
 })
-    */
+
